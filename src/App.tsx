@@ -130,7 +130,17 @@ function recomputeActiveVideo(force = false) {
   activeVideoScene = winner;
 }
 
-function VideoScene({ src, scene, immediate = false, eagerLoad = false }: { src: string; scene: string; immediate?: boolean; eagerLoad?: boolean }) {
+function VideoScene({
+  src,
+  scene,
+  immediate = false,
+  eagerLoad = false,
+}: {
+  src: string;
+  scene: string;
+  immediate?: boolean;
+  eagerLoad?: boolean;
+}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [attach, setAttach] = useState(immediate);
@@ -138,19 +148,12 @@ function VideoScene({ src, scene, immediate = false, eagerLoad = false }: { src:
   const [failed, setFailed] = useState(false);
   const attachRef = useRef(immediate);
   const readyRef = useRef(false);
-  const revealTimerRef = useRef<number | null>(null);
-  /* The poster is the video's first frame: it renders instantly, the film
-     simply fades in on top of it. Nothing can ever look "empty". */
   const poster = src.replace(/\.mp4$/, ".jpg");
 
   const markReady = () => {
     if (readyRef.current) return;
     readyRef.current = true;
     setReady(true);
-    if (revealTimerRef.current) {
-      window.clearTimeout(revealTimerRef.current);
-      revealTimerRef.current = null;
-    }
   };
 
   useEffect(() => {
@@ -167,17 +170,11 @@ function VideoScene({ src, scene, immediate = false, eagerLoad = false }: { src:
 
           if (entry.isIntersecting) {
             if (!attachRef.current) {
-              /* Re-attach the stream as the chapter approaches again. */
               attachRef.current = true;
               setAttach(true);
             }
           } else if (coarse && !immediate && attachRef.current) {
-            /* Mobile memory hygiene — THE fix for "videos vanish mid-scroll":
-               iOS/Android keep a hardware decoder + frame buffers alive for
-               every <video> that still has a src. With five full-screen films
-               that exhausts the media memory budget and the browser starts
-               dropping video layers (black frames) or killing the tab.
-               Fully releasing the source of far-away chapters frees it. */
+            /* Mobile memory hygiene — release far-away videos */
             const video = videoRef.current;
             if (video && video.getAttribute("src")) {
               video.pause();
@@ -190,11 +187,11 @@ function VideoScene({ src, scene, immediate = false, eagerLoad = false }: { src:
             readyRef.current = false;
             setAttach(false);
             setReady(false);
+            setFailed(false);
           }
         });
         recomputeActiveVideo();
       },
-      /* One viewport ahead loads only the upcoming chapter's metadata. */
       { rootMargin: "100% 0px", threshold: [0, 0.25, 0.6] },
     );
     observer.observe(wrap);
@@ -212,41 +209,43 @@ function VideoScene({ src, scene, immediate = false, eagerLoad = false }: { src:
     const video = videoRef.current;
     if (!video) return;
 
-    /* (Re-)attach the source — also restores the stream after a mobile teardown. */
-    if (!video.getAttribute("src")) video.src = src;
+    if (!video.getAttribute("src")) {
+      video.src = src;
+    }
     video.muted = true;
     video.preload = immediate || eagerLoad ? "auto" : "metadata";
-    videoRegistry.set(scene, { video, ratio: sceneRatios.get(scene) ?? (immediate ? 1 : 0) });
+    video.playsInline = true;
+
+    videoRegistry.set(scene, {
+      video,
+      ratio: sceneRatios.get(scene) ?? (immediate ? 1 : 0),
+    });
 
     const onReady = () => markReady();
     const onError = () => {
-      /* Broken stream: keep the poster, never a black hole. */
       setFailed(true);
       setReady(false);
     };
+
     video.addEventListener("loadeddata", onReady);
     video.addEventListener("canplay", onReady);
+    video.addEventListener("canplaythrough", onReady);
     video.addEventListener("playing", onReady);
     video.addEventListener("error", onError);
 
-    if (video.readyState >= 2) markReady();
-
-    /* Safety net: some mobile browsers never fire canplay for a paused,
-       metadata-only stream. After 2.6s we reveal whatever frame exists —
-       the poster underneath guarantees a seamless image either way. */
-    revealTimerRef.current = window.setTimeout(markReady, 2600);
+    if (video.readyState >= 3) {
+      markReady();
+    }
 
     recomputeActiveVideo();
 
     return () => {
       video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("canplay", onReady);
+      video.removeEventListener("canplaythrough", onReady);
       video.removeEventListener("playing", onReady);
       video.removeEventListener("error", onError);
-      if (revealTimerRef.current) {
-        window.clearTimeout(revealTimerRef.current);
-        revealTimerRef.current = null;
-      }
+
       video.pause();
       videoRegistry.delete(scene);
       if (activeVideoScene === scene) {
@@ -257,29 +256,36 @@ function VideoScene({ src, scene, immediate = false, eagerLoad = false }: { src:
   }, [attach, immediate, eagerLoad, scene, src]);
 
   return (
-    <div ref={wrapRef} data-scene={scene} className="scene-video pointer-events-none absolute inset-0 overflow-hidden">
-      <img
-        src={poster}
-        alt=""
-        className="scene-poster"
-        loading={immediate ? "eager" : "lazy"}
-        fetchPriority={immediate ? "high" : undefined}
-        decoding="async"
-        aria-hidden="true"
-      />
+    <div
+      ref={wrapRef}
+      data-scene={scene}
+      className="scene-video pointer-events-none absolute inset-0 overflow-hidden"
+    >
       {!failed ? (
         <video
           ref={videoRef}
-          className={`absolute inset-0 h-full w-full ${ready ? "opacity-100" : "opacity-0"}`}
+          poster={poster}
+          className={`absolute inset-0 h-full w-full transition-opacity duration-700 ease-out ${
+            ready ? "opacity-100" : "opacity-0"
+          }`}
           muted
           playsInline
-          autoPlay={immediate}
           loop
           preload="none"
           aria-hidden="true"
           tabIndex={-1}
         />
-      ) : null}
+      ) : (
+        /* Fallback لو الفيديو ما فتحش — يظهر Poster كـ img لحماية */
+        <img
+          src={poster}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          loading={immediate ? "eager" : "lazy"}
+          decoding="async"
+          aria-hidden="true"
+        />
+      )}
       <div className="video-shade absolute inset-0" aria-hidden="true" />
     </div>
   );

@@ -436,3 +436,45 @@ body {
     animation: none !important;
   }
 }
+.scene-video {
+  background-color: #0d0502; /* لون خلفية يتطابق مع الموقع */
+}
+
+.scene-video video {
+  object-fit: cover;
+  background-color: #0d0502;
+  will-change: opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Native video poster matches cover perfectly */
+.scene-video video::poster {
+  object-fit: cover;
+}
+@media (hover: none), (pointer: coarse) {
+  .scene-video {
+    will-change: auto;
+  }
+
+  .menu-track {
+    will-change: auto;
+  }
+
+  .universe-word {
+    will-change: auto;
+  }
+
+  /* نوقف الحركة اللي بتستهلك بطارية على تاتش */
+  .dish-media-float,
+  .dish-media-spin {
+    animation: none !important;
+  }
+
+  .cinematic-nav.nav-scrolled {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
