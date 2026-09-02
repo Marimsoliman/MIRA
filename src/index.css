@@ -477,4 +477,8 @@ body {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }
+}/* ── scene poster — fills instantly under the video ── */
+.scene-poster {
+  object-fit: cover;
+  transform: translateZ(0);
 }
