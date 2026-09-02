@@ -276,7 +276,6 @@ function VideoScene({
           tabIndex={-1}
         />
       ) : (
-        /* Fallback لو الفيديو ما فتحش — يظهر Poster كـ img لحماية */
         <img
           src={poster}
           alt=""
