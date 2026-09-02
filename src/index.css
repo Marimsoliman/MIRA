@@ -482,3 +482,7 @@ body {
   object-fit: cover;
   transform: translateZ(0);
 }
+.scene-poster {
+  object-fit: cover;
+  transform: translateZ(0);
+}
