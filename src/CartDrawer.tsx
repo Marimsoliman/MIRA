@@ -226,8 +226,9 @@ export default function CartDrawer({ open, dishes, cart, onClose, onSetQuantity,
         {/* ── header ── */}
         <div className="flex items-start justify-between gap-4 border-b border-white/[0.07] px-6 pb-5 pt-6">
           <div>
-            <p className="text-[0.56rem] uppercase tracking-[0.34em] text-[#e5a95e]/70">Aurelia · Delivery</p>
-            <h2 className="mt-2 font-serif text-3xl tracking-[-0.03em] text-[#f6e8d5]">
+<p className="text-[0.56rem] uppercase tracking-[0.34em] text-[#e5a95e]/70">
+  MIRA · Delivery
+</p>            <h2 className="mt-2 font-serif text-3xl tracking-[-0.03em] text-[#f6e8d5]">
               {step === "done" ? "Order confirmed" : "Your order"}
             </h2>
             {step !== "done" ? (
