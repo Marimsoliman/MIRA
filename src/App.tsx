@@ -159,31 +159,32 @@ function VideoScene({
   immediate?: boolean;
   eagerLoad?: boolean;
 }) {
-  const sources   = videoSources[scene];
-  const wrapRef   = useRef<HTMLDivElement>(null);
-  const videoRef  = useRef<HTMLVideoElement>(null);
-  const [attach,  setAttach]  = useState(immediate);
-  const [ready,   setReady]   = useState(false);
-  const [failed,  setFailed]  = useState(false);
+  const sources  = videoSources[scene];
+  const wrapRef  = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [attach, setAttach] = useState(immediate);
+  const [ready,  setReady]  = useState(false);
+  const [failed, setFailed] = useState(false);
   const attachRef = useRef(immediate);
   const readyRef  = useRef(false);
   const timerRef  = useRef<number | null>(null);
 
-  /* Poster lives next to the video file, same name, .jpg extension */
   const coarseNow = isCoarsePointer();
-  const activeSrc = sources
-    ? (coarseNow ? sources.mobile : sources.desktop)
-    : "";
-  const poster    = activeSrc.replace(/\.mp4$/, ".jpg");
+  const activeSrc = sources ? (coarseNow ? sources.mobile : sources.desktop) : "";
+
+  /* Poster path — same filename, .jpg extension */
+  const poster = activeSrc.replace(/\.mp4$/, ".jpg");
 
   const markReady = () => {
     if (readyRef.current) return;
     readyRef.current = true;
     setReady(true);
-    if (timerRef.current) { window.clearTimeout(timerRef.current); timerRef.current = null; }
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
   };
 
-  /* Intersection — attach / release source */
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap || !sources) return;
@@ -197,16 +198,24 @@ function VideoScene({
           if (reg) reg.ratio = entry.intersectionRatio;
 
           if (entry.isIntersecting) {
-            if (!attachRef.current) { attachRef.current = true; setAttach(true); }
+            if (!attachRef.current) {
+              attachRef.current = true;
+              setAttach(true);
+            }
           } else if (coarse && !immediate && attachRef.current) {
-            /* Release decoder memory for off-screen chapters on mobile */
             const v = videoRef.current;
-            if (v && v.getAttribute("src")) { v.pause(); v.removeAttribute("src"); v.load(); }
+            if (v && v.getAttribute("src")) {
+              v.pause();
+              v.removeAttribute("src");
+              v.load();
+            }
             videoRegistry.delete(scene);
             if (activeVideoScene === scene) activeVideoScene = null;
             attachRef.current = false;
             readyRef.current  = false;
-            setAttach(false); setReady(false); setFailed(false);
+            setAttach(false);
+            setReady(false);
+            setFailed(false);
           }
         });
         recomputeActiveVideo();
@@ -224,18 +233,15 @@ function VideoScene({
     };
   }, [immediate, scene, sources]);
 
-  /* Wire src + events once attach flips true */
   useEffect(() => {
     if (!attach || !activeSrc) return;
     const video = videoRef.current;
     if (!video) return;
 
     if (!video.getAttribute("src")) video.src = activeSrc;
-    video.muted      = true;
+    video.muted       = true;
     video.playsInline = true;
-    /* Hero buffers fully; next chapter fetches metadata only;
-       ingredients (long chapter) buffers eagerly so it never stutters. */
-    video.preload    = immediate ? "auto" : eagerLoad ? "auto" : "metadata";
+    video.preload     = immediate ? "auto" : eagerLoad ? "auto" : "metadata";
 
     videoRegistry.set(scene, {
       video,
@@ -251,11 +257,13 @@ function VideoScene({
     video.addEventListener("playing",        onReady);
     video.addEventListener("error",          onError);
 
-    if (video.readyState >= 3) markReady();
+    if (video.readyState >= 2) markReady();
 
-    /* Safety net — some mobile browsers never fire canplay for
-       metadata-only streams; reveal after 3 s regardless. */
-    timerRef.current = window.setTimeout(markReady, 3000);
+    /* ── الحل الأساسي ──
+       بدل ما نستنى canplay (ممكن تتأخر 3-5 ثواني على موبايل)،
+       بنكشف الفيديو بعد ثانية واحدة بس —
+       الـ poster موجود تحته دايماً فمفيش void. */
+    timerRef.current = window.setTimeout(markReady, 800);
 
     recomputeActiveVideo();
 
@@ -265,10 +273,16 @@ function VideoScene({
       video.removeEventListener("canplaythrough", onReady);
       video.removeEventListener("playing",        onReady);
       video.removeEventListener("error",          onError);
-      if (timerRef.current) { window.clearTimeout(timerRef.current); timerRef.current = null; }
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
       video.pause();
       videoRegistry.delete(scene);
-      if (activeVideoScene === scene) { activeVideoScene = null; recomputeActiveVideo(); }
+      if (activeVideoScene === scene) {
+        activeVideoScene = null;
+        recomputeActiveVideo();
+      }
     };
   }, [attach, immediate, eagerLoad, scene, activeSrc]);
 
@@ -278,7 +292,7 @@ function VideoScene({
       data-scene={scene}
       className="scene-video pointer-events-none absolute inset-0 overflow-hidden"
     >
-      {/* Poster renders instantly — nothing ever looks empty */}
+      {/* ── Poster — يظهر فوراً، مش بيستنى حاجة ── */}
       <img
         src={poster}
         alt=""
@@ -289,11 +303,11 @@ function VideoScene({
         decoding={immediate ? "sync" : "async"}
       />
 
-      {/* Video fades in over the poster once buffered */}
+      {/* ── Video يظهر فوق الـ poster بـ fade لما يكون جاهز ── */}
       {!failed && activeSrc ? (
         <video
           ref={videoRef}
-          className={`absolute inset-0 h-full w-full transition-opacity duration-700 ease-out ${
+          className={`absolute inset-0 h-full w-full transition-opacity duration-1000 ease-out ${
             ready ? "opacity-100" : "opacity-0"
           }`}
           muted
