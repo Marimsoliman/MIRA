@@ -1,0 +1,438 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Fraunces", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --color-ember: #e5a95e;
+  --color-cream: #f6e8d5;
+  --color-coal: #090302;
+}
+
+html {
+  background: #090302;
+  scroll-behavior: smooth;
+  scrollbar-color: #2c1708 #090302;
+}
+
+body {
+  background: #090302;
+  color: #f4e5d1;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #090302;
+}
+::-webkit-scrollbar-thumb {
+  background: #2c1708;
+  border-radius: 8px;
+  border: 2px solid #090302;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4a2a10;
+}
+
+/* ── custom cursor ─────────────────────────────── */
+.has-custom-cursor,
+.has-custom-cursor * {
+  cursor: none !important;
+}
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  border: 1px solid rgba(243, 222, 196, 0.32);
+  background: transparent;
+  pointer-events: none;
+  transition:
+    width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    opacity 0.3s ease;
+}
+
+.custom-cursor span {
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #f6e8d5;
+  opacity: 0;
+  transform: scale(0.55);
+  transition:
+    opacity 0.25s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-cursor[data-active="true"] {
+  width: 96px;
+  height: 96px;
+  background: rgba(18, 7, 3, 0.55);
+  border-color: rgba(229, 169, 94, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.custom-cursor[data-active="true"] span {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.custom-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 121;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #e5a95e;
+  box-shadow: 0 0 12px rgba(229, 169, 94, 0.9);
+  pointer-events: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .custom-cursor,
+  .custom-cursor-dot {
+    display: none;
+  }
+}
+
+/* ── navigation ────────────────────────────────── */
+.cinematic-nav {
+  background: linear-gradient(to bottom, rgba(9, 3, 2, 0.78), rgba(9, 3, 2, 0));
+}
+
+.cinematic-nav.nav-scrolled {
+  background: rgba(9, 3, 2, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(243, 222, 196, 0.08);
+}
+
+.nav-link {
+  position: relative;
+  display: inline-block;
+  padding-block: 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(245, 228, 207, 0.6);
+  transition: color 0.4s ease;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: #e5a95e;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-link:hover {
+  color: #ffffff;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* ── video scenes ──────────────────────────────── */
+.scene-video {
+  background:
+    radial-gradient(120% 90% at 50% 38%, #1b0c05 0%, #0d0502 58%, #090302 100%);
+  will-change: transform, opacity;
+  contain: paint;
+}
+
+.scene-video .scene-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+}
+
+.scene-video video {
+  object-fit: cover;
+  transition: opacity 1.4s ease-out;
+}
+
+.video-shade {
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(9, 3, 2, 0.62) 0%,
+      rgba(9, 3, 2, 0.12) 24%,
+      rgba(9, 3, 2, 0.05) 50%,
+      rgba(9, 3, 2, 0.38) 78%,
+      rgba(9, 3, 2, 0.86) 100%
+    ),
+    radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(9, 3, 2, 0.48) 100%),
+    linear-gradient(105deg, rgba(52, 21, 6, 0.14), transparent 45%);
+}
+
+/* ── scroll sigil ──────────────────────────────── */
+.scroll-line {
+  animation: scrollLine 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes scrollLine {
+  0% {
+    transform: translateY(-110%);
+  }
+  55% {
+    transform: translateY(120%);
+  }
+  100% {
+    transform: translateY(120%);
+  }
+}
+
+/* ── menu dishes ───────────────────────────────── */
+.dish-media {
+  width: clamp(230px, 26vw, 430px);
+  aspect-ratio: 1 / 1;
+}
+
+.dish-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 57%, transparent 70.5%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 57%, transparent 70.5%);
+  filter: drop-shadow(0 46px 70px rgba(0, 0, 0, 0.6)) saturate(1.06);
+}
+
+.dish-media-float {
+  animation: floatBob 7.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.dish-media-spin {
+  animation: spinSlow 72s linear infinite;
+  will-change: transform;
+}
+
+@keyframes floatBob {
+  0%,
+  100% {
+    transform: translateY(-2.4%);
+  }
+  50% {
+    transform: translateY(2.4%);
+  }
+}
+
+@keyframes spinSlow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.menu-quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  height: 2.75rem;
+  padding-inline: 1.05rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(243, 222, 196, 0.2);
+  background: rgba(10, 4, 2, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.menu-quantity button {
+  width: 1.4rem;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: rgba(245, 228, 207, 0.72);
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.menu-quantity button:hover {
+  color: #e5a95e;
+  transform: scale(1.18);
+}
+
+.menu-quantity span {
+  min-width: 1.6rem;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: #f6e8d5;
+}
+
+.menu-add-button {
+  display: inline-flex;
+  align-items: center;
+  height: 2.75rem;
+  padding-inline: 1.6rem;
+  border-radius: 9999px;
+  background: #f1ddc1;
+  color: #170806;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
+  transition:
+    background 0.4s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s ease;
+}
+
+.menu-add-button:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* ── universe words / ingredient chapter ───────── */
+.universe-word {
+  text-shadow:
+    0 0 70px rgba(229, 169, 94, 0.16),
+    0 2px 30px rgba(0, 0, 0, 0.35);
+  will-change: transform, opacity;
+}
+
+/* ── ambient warmth (guards any gap from ever being flat black) ── */
+.ambient-orb {
+  position: fixed;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ambient-orb-a {
+  width: 62vmax;
+  height: 62vmax;
+  left: -20vmax;
+  top: -16vmax;
+  background: radial-gradient(circle, rgba(122, 52, 16, 0.17), transparent 65%);
+  animation: orbDrift 26s ease-in-out infinite alternate;
+}
+
+.ambient-orb-b {
+  width: 56vmax;
+  height: 56vmax;
+  right: -22vmax;
+  bottom: -20vmax;
+  background: radial-gradient(circle, rgba(229, 169, 94, 0.08), transparent 62%);
+  animation: orbDrift 34s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes orbDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(4vmax, 3vmax, 0);
+  }
+}
+
+/* ── cart drawer ───────────────────────────────── */
+.cart-panel {
+  transform: translateX(0);
+  transition:
+    transform 0.62s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s 0s;
+}
+
+.cart-panel[data-open="false"] {
+  transform: translateX(103%);
+  visibility: hidden;
+  transition:
+    transform 0.62s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s 0.62s;
+}
+
+.cart-step {
+  animation: stepIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── mobile / touch performance guards ───────────
+   Phones pay a heavy price for stacked backdrop-blur, huge animated
+   gradient orbs and continuous CSS masking. Keep the look, cut the cost. */
+@media (hover: none), (pointer: coarse) {
+  .cinematic-nav.nav-scrolled {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .ambient-orb {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .dish-media-float,
+  .dish-media-spin {
+    will-change: auto;
+  }
+
+  .menu-quantity {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 4, 2, 0.55);
+  }
+
+  .universe-word {
+    will-change: auto;
+  }
+
+  .scene-video {
+    contain: layout paint;
+  }
+}
+
+/* ── reduced motion ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .dish-media-float,
+  .dish-media-spin,
+  .scroll-line,
+  .ambient-orb,
+  .cart-step {
+    animation: none !important;
+  }
+}
